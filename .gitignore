@@ -1,0 +1,45 @@
+# Data (too large, download with scripts/download_data.py)
+data/
+
+# Models & checkpoints
+models/*.pt
+models/*.pth
+
+# Results & logs
+results/
+*.log
+*.csv
+runs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Misc
+.cache/
+*.tmp
