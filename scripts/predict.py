@@ -24,7 +24,7 @@ from tqdm import tqdm
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.model import create_model
+from src.model import create_model, resolve_device
 
 
 def predict_directory(
@@ -44,13 +44,13 @@ def predict_directory(
         backbone: backbone name
         output_json: path to save predictions
         confidence_threshold: threshold for binary decision
-        device: cuda or cpu
+        device: auto, cuda, mps, or cpu
     
     Returns:
         dict: predictions
     """
     # Setup
-    device = torch.device(device if torch.cuda.is_available() else "cpu")
+    device = resolve_device(device)
     
     # Load model
     print(f"Loading model from {model_path}...")
@@ -146,7 +146,12 @@ def main():
     parser.add_argument("--backbone", default="sigclip")
     parser.add_argument("--output", default="predictions.json")
     parser.add_argument("--threshold", type=float, default=0.5)
-    parser.add_argument("--device", default="cuda")
+    parser.add_argument(
+        "--device",
+        default="auto",
+        choices=["auto", "cuda", "mps", "cpu"],
+        help="auto picks cuda, then Apple MPS, then CPU",
+    )
     
     args = parser.parse_args()
     

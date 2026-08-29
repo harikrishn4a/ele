@@ -15,7 +15,7 @@ from tqdm import tqdm
 from sklearn.metrics import roc_auc_score, roc_curve, auc, accuracy_score
 
 from src.dataset import AIGIDataset
-from src.model import create_model
+from src.model import create_model, resolve_device
 import torchvision.transforms.functional as TF
 
 
@@ -287,11 +287,18 @@ def main():
     parser.add_argument("--backbone", default="sigclip")
     parser.add_argument("--dataset", default="data")
     parser.add_argument("--output", default="results/eval.csv")
+    parser.add_argument(
+        "--device",
+        default="auto",
+        choices=["auto", "cuda", "mps", "cpu"],
+        help="auto picks cuda, then Apple MPS, then CPU",
+    )
     args = parser.parse_args()
     
     evaluator = TransformEvaluator(
         model_path=args.model,
         backbone=args.backbone,
+        device=str(resolve_device(args.device)),
     )
     
     evaluator.evaluate_grid(

@@ -227,6 +227,8 @@ python src/train.py \
 
 ---
 
+Phase 1–3 evaluate robustness on the same generator family; Phase 4 adds a generalization test on [GenImage/WildFake].
+
 ## Next Steps
 
 1. **Now**: Set up environment, download data (5 min)

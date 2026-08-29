@@ -15,8 +15,8 @@ from tqdm import tqdm
 import numpy as np
 
 from src.dataset import create_dataloader
-from src.model import create_model, PairwiseTrainingWrapper
-from src.evaluate import evaluate_model
+from src.model import create_model, PairwiseTrainingWrapper, resolve_device
+# from src.evaluate import evaluate_model
 
 
 logging.basicConfig(level=logging.INFO)
@@ -200,11 +200,17 @@ def main():
     # Output
     parser.add_argument("--output", default="models/baseline.pt")
     parser.add_argument("--checkpoint-dir", default="models")
+    parser.add_argument(
+        "--device",
+        default="auto",
+        choices=["auto", "cuda", "mps", "cpu"],
+        help="auto picks cuda, then Apple MPS, then CPU",
+    )
     
     args = parser.parse_args()
     
     # Setup
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = resolve_device(args.device)
     logger.info(f"Using device: {device}")
     
     # Create data loaders

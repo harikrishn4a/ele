@@ -32,6 +32,16 @@ def create_directory_structure(root_dir="data"):
     logger.info(f"Created directory structure in {root_dir}/")
 
 
+def first_existing_subdir(parent, names):
+    """Return the first existing subdirectory, trying each name in order."""
+    parent = Path(parent)
+    for name in names:
+        path = parent / name
+        if path.is_dir():
+            return path
+    return None
+
+
 def prepare_cifake(dataset_path="~/Downloads/CIFAKE", data_root="data"):
     """
     Prepare CIFAKE dataset.
@@ -49,19 +59,21 @@ def prepare_cifake(dataset_path="~/Downloads/CIFAKE", data_root="data"):
     
     logger.info("Processing CIFAKE...")
     
-    # Typical structure: CIFAKE/real/ and CIFAKE/synthetic/
-    for split_name, split_dir in [("train", "train"), ("test", "test")]:
-        # Copy real
-        src_real = dataset_path / f"{split_name}" / "real"
-        dst_real = data_root / split_name / "real"
-        if src_real.exists():
-            copy_images(src_real, dst_real)
-        
-        # Copy fake
-        src_fake = dataset_path / f"{split_name}" / "synthetic"
-        dst_fake = data_root / split_name / "fake"
-        if src_fake.exists():
-            copy_images(src_fake, dst_fake)
+    # CIFAKE uses train/REAL + train/FAKE (also accept real/fake/synthetic)
+    for split_name in ["train", "test"]:
+        split_dir = dataset_path / split_name
+        src_real = first_existing_subdir(split_dir, ["REAL", "real"])
+        src_fake = first_existing_subdir(split_dir, ["FAKE", "fake", "synthetic"])
+
+        if src_real:
+            copy_images(src_real, data_root / split_name / "real")
+        else:
+            logger.warning(f"No real folder under {split_dir}")
+
+        if src_fake:
+            copy_images(src_fake, data_root / split_name / "fake")
+        else:
+            logger.warning(f"No fake folder under {split_dir}")
     
     logger.info("CIFAKE processed")
     return True

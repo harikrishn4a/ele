@@ -230,7 +230,8 @@ git push -u origin main
 - **Cozzolino et al. (CLIP baseline)**: https://arxiv.org/abs/2312.00195
 - **LPT (pairwise training)**: https://arxiv.org/abs/2604.12307
 - **SAFE (augmentation)**: https://arxiv.org/abs/2408.06741
-- **Paper shortlist**: See `robust_aigi_paper_shortlist.csv`
+- **Paper shortlist**: `robust_aigi_paper_shortlist.csv` (34 papers tiered by adoption priority)
+- **Build playbook**: `PLAYBOOK.md` (full technical guidance with architectural decisions)
 
 ---
 

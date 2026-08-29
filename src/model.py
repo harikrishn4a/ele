@@ -242,6 +242,25 @@ class PairwiseTrainingWrapper(nn.Module):
         return loss
 
 
+def resolve_device(device: str = "auto") -> torch.device:
+    """Pick cuda, then Apple MPS, then CPU. Pass cuda/mps/cpu to force one."""
+    requested = (device or "auto").lower()
+    mps_ok = torch.backends.mps.is_available() and torch.backends.mps.is_built()
+
+    if requested != "auto":
+        if requested == "cuda" and not torch.cuda.is_available():
+            raise RuntimeError("CUDA was requested but is not available")
+        if requested == "mps" and not mps_ok:
+            raise RuntimeError("MPS was requested but is not available")
+        return torch.device(requested)
+
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if mps_ok:
+        return torch.device("mps")
+    return torch.device("cpu")
+
+
 def create_model(
     backbone: str = "sigclip",
     head_type: str = "linear",
