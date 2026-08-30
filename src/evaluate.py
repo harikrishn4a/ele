@@ -59,22 +59,31 @@ class TransformEvaluator:
                 image, label = dataset[idx]
                 
                 # Apply transform if provided
+                # NOTE: image is already normalized from dataset[idx]
+                # We must denormalize before applying PIL transforms
                 if transform_fn is not None:
+                    # Denormalize using train's ImageNet stats
+                    image = TF.normalize(
+                        image,
+                        mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
+                        std=[1/0.229, 1/0.224, 1/0.225]
+                    )
                     image_pil = TF.to_pil_image(image)
                     image = transform_fn(image_pil)
                     image = TF.to_tensor(image)
-                
-                # Normalize (SigLIP uses 0.5 mean/std)
-                image = TF.normalize(
-                    image,
-                    mean=[0.5, 0.5, 0.5],
-                    std=[0.5, 0.5, 0.5]
-                )
+                    # Re-normalize with train's stats
+                    image = TF.normalize(
+                        image,
+                        mean=[0.485, 0.456, 0.406],
+                        std=[0.229, 0.224, 0.225]
+                    )
                 
                 # Forward
                 image = image.unsqueeze(0).to(self.device)
                 logits = self.model(image)
-                probs = torch.softmax(logits, dim=1)[:, 1].cpu().numpy()  # P(fake)
+                # Dataset uses real=1, fake=0. roc_auc_score treats higher score as class 1 (real).
+                # So we use P(real) = softmax[:, 1]
+                probs = torch.softmax(logits, dim=1)[:, 1].cpu().numpy()  # P(real)
                 
                 all_probs.append(probs[0])
                 all_labels.append(label)
