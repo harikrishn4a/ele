@@ -32,14 +32,16 @@ class TransformEvaluator:
         backbone: str = "sigclip",
         device: str = "cuda",
     ):
-        self.device = device
+        self.device = torch.device(device if torch.cuda.is_available() else "cpu")
         self.backbone = backbone
         
-        # Load model
-        self.model = create_model(backbone=backbone, device=device)
-        self.model.load_state_dict(torch.load(model_path, map_location=device))
+        # Load model with proper device placement
+        checkpoint = torch.load(model_path, map_location=self.device)
+        self.model = create_model(backbone=backbone, device=str(self.device))
+        self.model.load_state_dict(checkpoint)
+        self.model = self.model.to(self.device)  # Explicit device move
         self.model.eval()
-        logger.info(f"Loaded model from {model_path}")
+        logger.info(f"Loaded model from {model_path} on device {self.device}")
     
     def evaluate_dataset(
         self,
@@ -62,11 +64,11 @@ class TransformEvaluator:
                     image = transform_fn(image_pil)
                     image = TF.to_tensor(image)
                 
-                # Normalize
+                # Normalize (SigLIP uses 0.5 mean/std)
                 image = TF.normalize(
                     image,
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225]
+                    mean=[0.5, 0.5, 0.5],
+                    std=[0.5, 0.5, 0.5]
                 )
                 
                 # Forward
